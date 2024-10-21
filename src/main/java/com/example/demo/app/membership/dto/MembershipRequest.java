@@ -1,5 +1,8 @@
 package com.example.demo.app.membership.dto;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.example.demo.app.enums.MembershipType;
 
 import lombok.Builder;
@@ -13,6 +16,10 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor(force = true)
 public class MembershipRequest {
     
+    @NotNull
+    @Min(0)
     private final Integer point;
+
+    @NotNull
     private final MembershipType membershipType;
 }
