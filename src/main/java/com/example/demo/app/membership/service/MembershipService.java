@@ -72,4 +72,15 @@ public class MembershipService {
                 .createdAt(membership.getCreatedAt())
                 .build();
     }
+
+    public void removeMembership(final Long MembershipId, final String userId) {
+        final Optional<Membership> optionalMembership = membershipRepository.findById(MembershipId);
+        final Membership membership = optionalMembership.orElseThrow(() -> new MembershipException(MembershipErrorResult.MEMBERSHIP_NOT_FOUND));
+
+        if (!membership.getUserId().equals(userId)) {
+            throw new MembershipException(MembershipErrorResult.NOT_MEMBERSHIP_OWNER);
+        }
+
+        membershipRepository.deleteById(MembershipId);
+    }
 }
