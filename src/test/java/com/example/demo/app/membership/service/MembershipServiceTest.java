@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ public class MembershipServiceTest {
     private final String userId = "userId";
     private final MembershipType membershipType = MembershipType.NAVER;
     private final Integer point = 10000;
-    
+    private final Long membershipId = -1L;
     @InjectMocks
     private MembershipService target;
     
@@ -91,5 +92,42 @@ public class MembershipServiceTest {
 
         // then
         assertEquals(3, result.size());
+    }
+
+    @Test
+    public void 멤버십상세조회실패_존재하지않음() {
+        // given
+        doReturn(Optional.empty()).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.getMembership(membershipId, userId));
+
+        // then
+        assertEquals(MembershipErrorResult.MEMBERSHIP_NOT_FOUND, result.getErrorResult()); 
+    }
+
+    @Test
+    public void 멤버십상세조회실패_본인이아님() {
+        // given
+        doReturn(Optional.empty()).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.getMembership(membershipId, userId));
+
+        // then
+        assertEquals(MembershipErrorResult.MEMBERSHIP_NOT_FOUND, result.getErrorResult()); 
+    }
+
+    @Test
+    public void 멤버십조회성공() {
+        // given
+        doReturn(Optional.of(membership())).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipDetailResponse result = target.getMembership(membershipId, userId);
+
+        // then
+        assertEquals(MembershipType.NAVER, result.getMembershipType());
+        assertEquals(point, result.getPoint());
     }
 }

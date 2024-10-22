@@ -1,6 +1,7 @@
 package com.example.demo.app.membership.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -53,5 +54,22 @@ public class MembershipService {
                                                                .createdAt(v.getCreatedAt())
                                                                .build())
                              .collect(Collectors.toList());
+    }
+
+    public MembershipDetailResponse getMembership(final Long membershipId, final String userId) {
+        
+        final Optional<Membership> optionalMembership = membershipRepository.findById(membershipId);
+        final Membership membership = optionalMembership.orElseThrow(() -> new MembershipException(MembershipErrorResult.MEMBERSHIP_NOT_FOUND));
+
+        if (!membership.getUserId().equals(userId)) {
+            throw new MembershipException(MembershipErrorResult.NOT_MEMBERSHIP_OWNER);
+        }
+
+        return MembershipDetailResponse.builder()
+                .id(membership.getId())
+                .membershipType(membership.getMembershipType())
+                .point(membership.getPoint())
+                .createdAt(membership.getCreatedAt())
+                .build();
     }
 }
