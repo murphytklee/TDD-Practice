@@ -8,6 +8,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,7 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.demo.app.enums.MembershipType;
-import com.example.demo.app.membership.dto.MembershipResponse;
+import com.example.demo.app.membership.dto.MembershipAddResponse;
+import com.example.demo.app.membership.dto.MembershipDetailResponse;
 import com.example.demo.app.membership.entity.Membership;
 import com.example.demo.app.membership.repository.MembershipRepository;
 import com.example.demo.exception.MembershipErrorResult;
@@ -53,7 +57,7 @@ public class MembershipServiceTest {
         doReturn(membership()).when(membershipRepository).save(any(Membership.class));
 
         // when
-        final MembershipResponse result = target.addMembership(userId, membershipType, point);
+        final MembershipAddResponse result = target.addMembership(userId, membershipType, point);
 
         // then
         assertNotNull(result.getId());
@@ -71,5 +75,21 @@ public class MembershipServiceTest {
                 .point(point)
                 .membershipType(MembershipType.NAVER)
                 .build();
+    }
+
+    @Test
+    public void 멤버십목록조회() {
+        // given
+        doReturn(Arrays.asList(
+            Membership.builder().build(),
+            Membership.builder().build(),
+            Membership.builder().build()
+        )).when(membershipRepository).findAllByUserId(userId);
+
+        // when
+        final List<MembershipDetailResponse> result = target.getMembershipList(userId);
+
+        // then
+        assertEquals(3, result.size());
     }
 }
