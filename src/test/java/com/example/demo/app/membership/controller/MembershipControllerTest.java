@@ -7,6 +7,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +25,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Stream;
 
 import com.example.demo.app.common.GlobalExceptionHandler;
 import com.example.demo.app.enums.MembershipType;
+import com.example.demo.app.membership.dto.MembershipAddResponse;
+import com.example.demo.app.membership.dto.MembershipDetailResponse;
 import com.example.demo.app.membership.dto.MembershipRequest;
-import com.example.demo.app.membership.dto.MembershipResponse;
 import com.example.demo.app.membership.service.MembershipService;
 import com.example.demo.exception.MembershipErrorResult;
 import com.example.demo.exception.MembershipException;
@@ -138,7 +141,7 @@ public class MembershipControllerTest {
     public void 멤버십등록성공() throws Exception {
         // given
         final String url = "/api/v1/memberships";
-        final MembershipResponse membershipResponse = MembershipResponse.builder()
+        final MembershipAddResponse membershipResponse = MembershipAddResponse.builder()
                                                                         .id(-1L)
                                                                         .membershipType(MembershipType.NAVER).build();
 
@@ -155,12 +158,43 @@ public class MembershipControllerTest {
         // then
         resultActions.andExpect(status().isCreated());
 
-        final MembershipResponse response = gson.fromJson(resultActions.andReturn()
+        final MembershipAddResponse response = gson.fromJson(resultActions.andReturn()
                                                 .getResponse()
-                                                .getContentAsString(StandardCharsets.UTF_8), MembershipResponse.class);
+                                                .getContentAsString(StandardCharsets.UTF_8), MembershipAddResponse.class);
 
         assertEquals(MembershipType.NAVER, response.getMembershipType());
         assertNotNull(response.getId());
+    }
+
+    @Test
+    public void 멤버십목록조회실패_사용자식별값이헤더에없음() throws Exception {
+        // given
+        final String url = "/api/v1/memberships";
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get(url));
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void 멤버십목록조회성공() throws Exception {
+        // given
+        final String url = "/api/v1/memberships";
+
+        doReturn(Arrays.asList(
+            MembershipDetailResponse.builder().build(),
+            MembershipDetailResponse.builder().build(),
+            MembershipDetailResponse.builder().build()
+        )).when(membershipService).getMembershipList("12345");
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get(url)
+                                                                                  .header(USER_ID_HEADER, "12345"));
+
+        // then
+        resultActions.andExpect(status().isOk());
     }
 
     private MembershipRequest membershipRequest(final Integer point, final MembershipType membershipType) {
