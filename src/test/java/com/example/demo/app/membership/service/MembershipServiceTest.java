@@ -23,6 +23,7 @@ import com.example.demo.app.membership.dto.MembershipAddResponse;
 import com.example.demo.app.membership.dto.MembershipDetailResponse;
 import com.example.demo.app.membership.entity.Membership;
 import com.example.demo.app.membership.repository.MembershipRepository;
+import com.example.demo.app.point.service.impl.RatePointService;
 import com.example.demo.exception.MembershipErrorResult;
 import com.example.demo.exception.MembershipException;
 
@@ -33,11 +34,15 @@ public class MembershipServiceTest {
     private final MembershipType membershipType = MembershipType.NAVER;
     private final Integer point = 10000;
     private final Long membershipId = -1L;
+
     @InjectMocks
     private MembershipService target;
     
     @Mock
     private MembershipRepository membershipRepository;
+
+    @Mock
+    private RatePointService ratePointService;
 
     @Test
     public void 멤버십등록실패_이미존재함() {
@@ -164,5 +169,40 @@ public class MembershipServiceTest {
 
         // when
         target.removeMembership(membershipId, userId);
+    }
+
+    @Test
+    public void 멤버십적립실패_존재하지않음() {
+        // given
+        doReturn(Optional.empty()).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.accumulateMembershipPoint(membershipId, userId, 10000));
+
+        // then
+        assertEquals(MembershipErrorResult.MEMBERSHIP_NOT_FOUND, result.getErrorResult());
+    }
+
+    @Test
+    public void 멤버십적립실패_본인이아님() {
+        // given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        // when
+        final MembershipException result = assertThrows(MembershipException.class, () -> target.accumulateMembershipPoint(membershipId, "notowner", 10000));
+
+        // then
+        assertEquals(MembershipErrorResult.NOT_MEMBERSHIP_OWNER, result.getErrorResult());
+    }
+
+    @Test
+    public void 멤버십적립성공() {
+        // given
+        final Membership membership = membership();
+        doReturn(Optional.of(membership)).when(membershipRepository).findById(membershipId);
+
+        // when
+        target.accumulateMembershipPoint(membershipId, userId, 10000);
     }
 }
