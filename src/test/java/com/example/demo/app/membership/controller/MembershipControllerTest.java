@@ -28,9 +28,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.example.demo.app.common.GlobalExceptionHandler;
 import com.example.demo.app.enums.MembershipType;
+import com.example.demo.app.membership.dto.MembershipAddRequest;
 import com.example.demo.app.membership.dto.MembershipAddResponse;
 import com.example.demo.app.membership.dto.MembershipDetailResponse;
-import com.example.demo.app.membership.dto.MembershipRequest;
 import com.example.demo.app.membership.service.MembershipService;
 import com.example.demo.exception.MembershipErrorResult;
 import com.example.demo.exception.MembershipException;
@@ -314,15 +314,15 @@ public class MembershipControllerTest {
         resultActions.andExpect(status().isNoContent());
     }
 
-    private MembershipRequest membershipRequest(final Integer point, final MembershipType membershipType) {
-        return MembershipRequest.builder()
+    private MembershipAddRequest membershipRequest(final Integer point, final MembershipType membershipType) {
+        return MembershipAddRequest.builder()
                                 .point(point)
                                 .membershipType(membershipType)
                                 .build();
     }
 
-    private MembershipRequest membershipRequest(final Integer point) {
-        return MembershipRequest.builder()
+    private MembershipAddRequest membershipRequest(final Integer point) {
+        return MembershipAddRequest.builder()
                                 .point(point)
                                 .build();
     }

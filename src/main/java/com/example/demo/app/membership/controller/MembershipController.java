@@ -4,9 +4,10 @@ import static com.example.demo.app.membership.constants.MembershipConstants.USER
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,12 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.app.membership.dto.MembershipAccumulateRequest;
+import com.example.demo.app.membership.dto.MembershipAddRequest;
 import com.example.demo.app.membership.dto.MembershipAddResponse;
 import com.example.demo.app.membership.dto.MembershipDetailResponse;
-import com.example.demo.app.membership.dto.MembershipRequest;
 import com.example.demo.app.membership.service.MembershipService;
-import com.example.demo.app.membership.validation.ValidationGroups.MembershipAccumulateMarker;
-import com.example.demo.app.membership.validation.ValidationGroups.MembershipAddMarker;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +33,7 @@ public class MembershipController {
     
     @PostMapping("/api/v1/memberships")
     public ResponseEntity<MembershipAddResponse> addMembership(@RequestHeader(USER_ID_HEADER) final String userId,
-                                                               @RequestBody @Validated(MembershipAddMarker.class) final MembershipRequest membershipRequest) {
+                                                               @RequestBody @Valid final MembershipAddRequest membershipRequest) {
         membershipService.addMembership(userId, membershipRequest.getMembershipType(), membershipRequest.getPoint());
         
         final MembershipAddResponse membershipResponse = membershipService.addMembership(userId, membershipRequest.getMembershipType(), membershipRequest.getPoint());
@@ -62,9 +62,9 @@ public class MembershipController {
     @PostMapping("/api/v1/memberships/{id}/accumulate")
     public ResponseEntity<Void> accumulateMembershipPoint(@RequestHeader(USER_ID_HEADER) final String userId,
                                                           @PathVariable final Long id,
-                                                          @RequestBody @Validated(MembershipAccumulateMarker.class) final MembershipRequest membershipRequest) {
+                                                          @RequestBody @Valid final MembershipAccumulateRequest aRequest) {
         
-        membershipService.accumulateMembershipPoint(id, userId, membershipRequest.getPoint());
+        membershipService.accumulateMembershipPoint(id, userId, aRequest.getPoint());
         return ResponseEntity.noContent().build(); 
     }
 }
