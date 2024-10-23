@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,5 +48,12 @@ public class MembershipController {
     @GetMapping("/api/v1/memberships/{id}")
     public ResponseEntity<MembershipDetailResponse> getMembership(@RequestHeader(USER_ID_HEADER) final String userId, @PathVariable final Long id) {
         return ResponseEntity.ok(membershipService.getMembership(id, userId));
+    }
+
+    @DeleteMapping("/api/v1/memberships/{id}")
+    public ResponseEntity<Void> removeMembership(@RequestHeader(USER_ID_HEADER) final String userId, @PathVariable final Long id) {
+        membershipService.removeMembership(id, userId);
+        
+        return ResponseEntity.noContent().build();
     }
 }
