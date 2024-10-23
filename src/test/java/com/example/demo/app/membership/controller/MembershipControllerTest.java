@@ -28,9 +28,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.example.demo.app.common.GlobalExceptionHandler;
 import com.example.demo.app.enums.MembershipType;
+import com.example.demo.app.membership.dto.MembershipAddRequest;
 import com.example.demo.app.membership.dto.MembershipAddResponse;
 import com.example.demo.app.membership.dto.MembershipDetailResponse;
-import com.example.demo.app.membership.dto.MembershipRequest;
 import com.example.demo.app.membership.service.MembershipService;
 import com.example.demo.exception.MembershipErrorResult;
 import com.example.demo.exception.MembershipException;
@@ -265,11 +265,65 @@ public class MembershipControllerTest {
         // then
         resultActions.andExpect(status().isNoContent());
     }
+    
+    @Test
+    public void 멤버십적립실패_사용자식별값이헤더에없음() throws Exception {
+        // given
+        final String url = "/api/v1/memberships/-1/accumulate";
 
-    private MembershipRequest membershipRequest(final Integer point, final MembershipType membershipType) {
-        return MembershipRequest.builder()
+        // when
+        final ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.post(url)
+                                                                                  .content(gson.toJson(membershipRequest(10000)))
+                                                                                  .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void 멤버십적립실패_포인트가음수() throws Exception {
+        // given
+        final String url = "/api/v1/memberships/-1/accumulate";
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post(url)
+                        .header(USER_ID_HEADER, "12345")
+                        .content(gson.toJson(membershipRequest(-1, MembershipType.NAVER)))
+                        .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void 멤버십적립성공() throws Exception {
+        // given
+        final String url = "/api/v1/memberships/-1/accumulate";
+
+        // when
+        final ResultActions resultActions = mockMvc.perform(
+                             MockMvcRequestBuilders.post(url)
+                                                   .header(USER_ID_HEADER, "12345")
+                                                   .content(gson.toJson(membershipRequest(10000)))
+                                                   .contentType(MediaType.APPLICATION_JSON)
+        );
+
+        // then
+        resultActions.andExpect(status().isNoContent());
+    }
+
+    private MembershipAddRequest membershipRequest(final Integer point, final MembershipType membershipType) {
+        return MembershipAddRequest.builder()
                                 .point(point)
                                 .membershipType(membershipType)
+                                .build();
+    }
+
+    private MembershipAddRequest membershipRequest(final Integer point) {
+        return MembershipAddRequest.builder()
+                                .point(point)
                                 .build();
     }
 

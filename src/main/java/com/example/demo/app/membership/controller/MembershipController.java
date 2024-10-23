@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.app.membership.dto.MembershipAccumulateRequest;
+import com.example.demo.app.membership.dto.MembershipAddRequest;
 import com.example.demo.app.membership.dto.MembershipAddResponse;
 import com.example.demo.app.membership.dto.MembershipDetailResponse;
-import com.example.demo.app.membership.dto.MembershipRequest;
 import com.example.demo.app.membership.service.MembershipService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,8 @@ public class MembershipController {
     private final MembershipService membershipService;
     
     @PostMapping("/api/v1/memberships")
-    public ResponseEntity<MembershipAddResponse> addMembership(@RequestHeader(USER_ID_HEADER) final String userId, @RequestBody @Valid final MembershipRequest membershipRequest) {
+    public ResponseEntity<MembershipAddResponse> addMembership(@RequestHeader(USER_ID_HEADER) final String userId,
+                                                               @RequestBody @Valid final MembershipAddRequest membershipRequest) {
         membershipService.addMembership(userId, membershipRequest.getMembershipType(), membershipRequest.getPoint());
         
         final MembershipAddResponse membershipResponse = membershipService.addMembership(userId, membershipRequest.getMembershipType(), membershipRequest.getPoint());
@@ -55,5 +57,14 @@ public class MembershipController {
         membershipService.removeMembership(id, userId);
         
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/api/v1/memberships/{id}/accumulate")
+    public ResponseEntity<Void> accumulateMembershipPoint(@RequestHeader(USER_ID_HEADER) final String userId,
+                                                          @PathVariable final Long id,
+                                                          @RequestBody @Valid final MembershipAccumulateRequest aRequest) {
+        
+        membershipService.accumulateMembershipPoint(id, userId, aRequest.getPoint());
+        return ResponseEntity.noContent().build(); 
     }
 }
